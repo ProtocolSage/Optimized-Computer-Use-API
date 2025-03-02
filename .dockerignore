@@ -1,0 +1,39 @@
+# Version control
+.git
+.gitignore
+
+# Output and data directories
+outputs/*
+data/*
+logs/*
+
+# Cache files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment files
+.env
+.venv
+env/
+venv/
+ENV/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Build files
+*.so
+*.dylib
+*.dll
+*.exe
+
+# Temp files
+.DS_Store
+Thumbs.db

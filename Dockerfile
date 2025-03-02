@@ -1,0 +1,140 @@
+# Use the official Python 3.11 slim image
+FROM python:3.11-slim
+
+# Set up environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    DEBIAN_FRONTEND=noninteractive \
+    DISPLAY=:1 \
+    XDG_RUNTIME_DIR=/tmp/runtime-appuser \
+    PULSE_SERVER=unix:/tmp/pulseaudio.socket
+
+# Install required system dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    netcat-openbsd \
+    xvfb \
+    x11vnc \
+    xterm \
+    xdotool \
+    scrot \
+    imagemagick \
+    novnc \
+    websockify \
+    tint2 \
+    libgl1-mesa-glx \
+    firefox-esr \
+    sudo \
+    net-tools \
+    curl \
+    wget \
+    unzip \
+    git \
+    build-essential \
+    gcc \
+    dumb-init \
+    psmisc \
+    portaudio19-dev \
+    python3-pyaudio \
+    libsndfile1 \
+    ffmpeg \
+    alsa-utils \
+    pulseaudio \
+    python3-tk \
+    adwaita-icon-theme && \
+    apt-get remove -y netcat-traditional || true && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Create a non-root user
+RUN useradd -m -s /bin/bash -d /home/appuser appuser && \
+    echo "appuser ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers && \
+    mkdir -p /tmp/runtime-appuser /tmp/.X11-unix && \
+    chmod 1777 /tmp/.X11-unix && \
+    chown appuser:appuser /tmp/runtime-appuser
+
+# Set the working directory
+WORKDIR /app
+
+# Create necessary directories
+RUN mkdir -p config extensions custom_extensions data logs outputs docs
+
+# Copy only what's needed for dependency installation first (better layer caching)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application files
+COPY *.py ./
+COPY docs/ docs/
+COPY extensions/ extensions/
+COPY custom_extensions/ custom_extensions/
+COPY config/ config/
+
+# Copy the self-signed certificate
+COPY self.pem /app/self.pem
+
+# Set ownership of the application directory
+RUN chown -R appuser:appuser /app
+
+# Create empty files/directories to avoid permission issues
+RUN mkdir -p /app/logs /app/outputs /app/data && \
+    touch /app/logs/.gitkeep /app/outputs/.gitkeep /app/data/.gitkeep && \
+    chown -R appuser:appuser /app/logs /app/outputs /app/data
+
+# Fix X11 socket directory at build time
+RUN rm -rf /tmp/.X11-unix && \
+    mkdir -p /tmp/.X11-unix && \
+    chmod 1777 /tmp/.X11-unix && \
+    chown root:root /tmp/.X11-unix && \
+    echo 'Section "ServerFlags"\n    Option "DisableVidModeExtension" "true"\n    Option "AllowMouseOpenFail" "true"\n    Option "PciForceNone" "true"\n    Option "AutoAddDevices" "false"\n    Option "AutoEnableDevices" "false"\nEndSection' > /etc/X11/xorg.conf.d/01-dummy.conf
+
+# Expose ports for VNC, NoVNC, and other services
+EXPOSE 5900 6080 8501 8080
+
+# Create entrypoint script
+RUN echo '#!/bin/bash\n\
+set -e\n\
+echo "Removing existing X11 socket directory..."\n\
+rm -rf /tmp/.X11-unix /tmp/.X*-lock\n\
+echo "Creating X11 socket directory..."\n\
+mkdir -p /tmp/.X11-unix\n\
+chmod -v 1777 /tmp/.X11-unix\n\
+chown -v root:root /tmp/.X11-unix\n\
+echo "Starting Xvfb..."\n\
+/usr/bin/Xvfb :1 -screen 0 1024x768x24 -ac +extension RANDR -nolisten tcp &\n\
+XVFB_PID=$!\n\
+sleep 5\n\
+if ! ps -p $XVFB_PID > /dev/null; then\n\
+    echo "ERROR: Xvfb failed to start. Exiting."\n\
+    exit 1\n\
+fi\n\
+echo "Starting x11vnc..."\n\
+x11vnc -display :1 -forever -shared -rfbport 5900 -nopw -xkb -bg -o /var/log/x11vnc.log -debug_xdamage &\n\
+sleep 3\n\
+if ! pgrep x11vnc > /dev/null; then\n\
+    echo "ERROR: x11vnc failed to start. Showing logs:"\n\
+    cat /var/log/x11vnc.log\n\
+    exit 1\n\
+fi\n\
+echo "Setting up PulseAudio..."\n\
+pulseaudio --start --log-target=syslog --system=false --disallow-exit &\n\
+sleep 2\n\
+echo "Starting noVNC..."\n\
+/usr/share/novnc/utils/launch.sh --vnc localhost:5900 --listen 6080 --cert /app/self.pem &\n\
+sleep 2\n\
+sudo -u appuser DISPLAY=:1 tint2 &\n\
+sleep 1\n\
+echo "Starting Claude Computer Use API..."\n\
+cd /app\n\
+sudo -u appuser DISPLAY=:1 python3 /app/gui_wrapper.py &\n\
+echo "Starting Streamlit interface..."\n\
+cd /app && sudo -u appuser bash -c "DISPLAY=:1 python3 -m streamlit run /app/streamlit_app.py --server.port=8501 --server.address=0.0.0.0 --server.enableCORS=false --server.enableXsrfProtection=false" &\n\
+echo "All services started. Container is running."\n\
+tail -f /dev/null\n' > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
+
+# Health check to ensure service availability
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:6080/ || exit 1
+
+# Run the entrypoint script with dumb-init
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["/app/entrypoint.sh"]

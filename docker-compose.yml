@@ -1,0 +1,41 @@
+services:
+  claude-computer-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: claude-computer-api
+    volumes:
+      - ./config:/app/config:ro
+      - ./data:/app/data
+      - ./logs:/app/logs
+      - ./outputs:/app/outputs
+      - ./custom_extensions:/app/custom_extensions:ro
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - DISPLAY=:1
+      - XDG_RUNTIME_DIR=/tmp/runtime-appuser
+      - PULSE_SERVER=unix:/tmp/pulseaudio.socket
+    ports:
+      - "5900:5900"  # VNC
+      - "6080:6080"  # noVNC web access
+      - "8501:8501"  # Streamlit interface
+      - "8080:8080"  # Combined interface
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 8G
+    shm_size: 2gb
+    security_opt:
+      - seccomp=unconfined
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6080/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
