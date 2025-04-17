@@ -1,0 +1,30 @@
+{
+  "auto_listen": true,
+  "auto_speak": true,
+  "speech_recognition": {
+    "model_size": "base",
+    "timeout": 30,
+    "save_audio": true
+  },
+  "text_to_speech": {
+    "rate": 180,
+    "volume": 1.0,
+    "voice_index": 0
+  },
+  "wake_words": [
+    "hey claude",
+    "okay claude",
+    "claude",
+    "computer"
+  ],
+  "activation_commands": [
+    "listen",
+    "wake up",
+    "can you hear me"
+  ],
+  "deactivation_commands": [
+    "stop listening",
+    "go to sleep",
+    "stop voice"
+  ]
+}

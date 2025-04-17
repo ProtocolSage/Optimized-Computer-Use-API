@@ -1,0 +1,135 @@
+{
+    "general": {
+        "log_level": "INFO",
+        "debug_mode": false,
+        "api_key_env_var": "ANTHROPIC_API_KEY",
+        "model": "claude-3-5-sonnet-20240620",
+        "max_tokens": 4096,
+        "temperature": 0.7,
+        "data_directory": "data",
+        "output_directory": "outputs",
+        "log_directory": "logs"
+    },
+    "api": {
+        "retry_attempts": 3,
+        "retry_delay": 2,
+        "timeout": 120,
+        "stream_mode": true,
+        "system_prompt": "You are Claude, an AI assistant with Computer Use capability. Use the computer tools to help with tasks, taking screenshots when necessary to verify results."
+    },
+    "gui": {
+        "width": 900,
+        "height": 700,
+        "screenshot_width": 600,
+        "theme": "light",
+        "font_size": 12,
+        "chat_history_size": 50,
+        "startup_message": "Claude Computer Use API is ready. What would you like to do?",
+        "auto_scroll": true,
+        "show_timestamps": true
+    },
+    "security": {
+        "level": "medium",
+        "require_confirmation": true,
+        "confirmation_blacklist": [
+            "shutdown", 
+            "format", 
+            "rm -rf"
+        ],
+        "command_whitelist": [
+            "python",
+            "pip",
+            "dir",
+            "ls",
+            "cat",
+            "type",
+            "echo",
+            "mkdir",
+            "cd"
+        ],
+        "command_blacklist": [
+            "sudo",
+            "su",
+            "chmod",
+            "chown",
+            "dd",
+            "mkfs",
+            "mount",
+            "umount",
+            "fdisk",
+            "sysctl"
+        ],
+        "file_path_restrictions": [
+            "/etc",
+            "/var",
+            "/boot",
+            "/root",
+            "/dev",
+            "/proc",
+            "/sys",
+            "C:\\Windows",
+            "C:\\Program Files"
+        ],
+        "allowed_domains": [
+            "github.com",
+            "stackoverflow.com",
+            "docs.python.org",
+            "anthropic.com"
+        ]
+    },
+    "extensions": {
+        "enabled": true,
+        "autoload": [
+            "app_tracker",
+            "web_search",
+            "text_to_speech"
+        ],
+        "extension_directories": [
+            "extensions",
+            "custom_extensions"
+        ]
+    },
+    "performance": {
+        "memory_limit_mb": 512,
+        "image_quality": 80,
+        "screenshot_throttle_ms": 500,
+        "command_timeout_seconds": 30,
+        "cache_enabled": true,
+        "cache_expiry_minutes": 60,
+        "multithreading": true,
+        "max_concurrent_tasks": 4
+    },
+    "tools": {
+        "screenshot": {
+            "format": "png",
+            "quality": 80,
+            "max_width": 1280,
+            "directory": "outputs/screenshots"
+        },
+        "keyboard": {
+            "delay_between_keys_ms": 10,
+            "special_keys_enabled": true
+        },
+        "mouse": {
+            "move_duration_ms": 500,
+            "smooth_movement": true,
+            "click_delay_ms": 100
+        },
+        "file": {
+            "max_read_size_kb": 1024,
+            "allowed_extensions": [
+                "txt", "log", "md", "py", "js", "html", "css", "json", "xml", "csv"
+            ],
+            "blocked_extensions": [
+                "exe", "dll", "sys", "bat", "cmd", "vbs", "ps1", "msi", "reg"
+            ]
+        },
+        "command": {
+            "shell": "powershell.exe",
+            "shell_args": ["-NoProfile", "-ExecutionPolicy", "Bypass"],
+            "max_output_size_kb": 512,
+            "timeout_seconds": 30,
+            "working_directory": ""
+        }
+    }
+}

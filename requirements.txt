@@ -1,31 +1,30 @@
-anthropic>=0.6.0
-pyautogui>=0.9.53
-httpx>=0.24.0
-pillow>=9.0.0
-pyttsx3>=2.90
-requests>=2.28.0
-psutil>=5.9.0
-pygetwindow>=0.0.9
-streamlit>=1.28.0
-python-dotenv>=1.0.0
-Pympler>=1.0.1
-memory-profiler>=0.61
-nest-asyncio>=1.5.8
-watchdog>=3.0.0
-setuptools>=68.0.0
-wheel>=0.41.0
-pyOpenSSL>=23.2.0
-websockets>=11.0.3
-asyncio>=3.4.3
-win10toast>=0.9.0; platform_system == "Windows"
-# pyaudio>=0.2.13  # Using system-provided package via apt
-numpy>=1.22.0
-aenum>=3.1.15  # For StrEnum compatibility
+anthropic>=0.6.0          # For integration with the Anthropics API.
+pyautogui>=0.9.53          # For automating UI interactions.
+httpx>=0.24.0             # For making HTTP requests.
+pillow>=9.0.0             # For image processing.
+pyttsx3>=2.90             # For text-to-speech (TTS); used by your voice feature.
+requests>=2.28.0          # For general HTTP requests.
+psutil>=5.9.0             # For monitoring system and process status.
+pygetwindow>=0.0.9        # For window management (getting/placing UI windows).
+streamlit>=1.28.0         # For building the interactive GUI.
+python-dotenv>=1.0.0      # For loading environment variables from .env files.
+Pympler>=1.0.1            # For memory profiling.
+memory-profiler>=0.61     # For detailed memory usage analysis.
+nest-asyncio>=1.5.8       # To enable nested asynchronous event loops.
+watchdog>=3.0.0           # For monitoring filesystem changes.
+setuptools>=68.0.0        # Required for package management and distribution.
+wheel>=0.41.0             # Used for building/wheel distribution of packages.
+pyOpenSSL>=23.2.0         # For enhanced SSL support.
+websockets>=11.0.3        # To support WebSocket connections.
+asyncio>=3.4.3           # For asynchronous programming.
+win10toast>=0.9.0         # For native Windows toast notifications (only on Windows).
+# pyaudio>=0.2.13        # Commented out; using system-provided package via apt.
+numpy>=1.22.0            # For numerical and matrix operations.
+aenum>=3.1.15            # Provides compatibility with Python StrEnum.
 
 # Speech recognition options (choose one):
 # Option 1: OpenAI Whisper - slower but more accurate
 # openai-whisper>=20231117
-
 # Option 2: faster-whisper - CTranslate2-based implementation, faster but requires FFmpeg
-faster-whisper>=0.10.0
-ffmpeg-python>=0.2.0
+faster-whisper>=0.10.0     # For speech recognition.
+ffmpeg-python>=0.2.0       # For interacting with FFmpeg.
